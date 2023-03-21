@@ -7,8 +7,7 @@
 int main(int argc, char *argv[]) {
     char *buf[MAXARG + 1];
     int bufLen = argc - 1;
-    buf[0] = "grep";
-    for (int i = 2; i < argc; ++i) 
+    for (int i = 1; i < argc; ++i) 
         buf[i - 1] = argv[i];
 
     char word[512];

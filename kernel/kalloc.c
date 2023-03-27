@@ -23,6 +23,16 @@ struct {
   struct run *freelist;
 } kmem;
 
+int get_free_memory_amount(void) {
+    int cnt = 0;
+    const struct run *freepointer = kmem.freelist;
+    while (freepointer) {
+        freepointer = freepointer->next;
+        cnt += PGSIZE;
+    }
+    return cnt;
+}
+
 void
 kinit()
 {
@@ -80,3 +90,5 @@ kalloc(void)
     memset((char*)r, 5, PGSIZE); // fill with junk
   return (void*)r;
 }
+
+

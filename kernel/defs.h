@@ -8,6 +8,7 @@ struct spinlock;
 struct sleeplock;
 struct stat;
 struct superblock;
+struct sysinfo;
 
 // bio.c
 void            binit(void);
@@ -63,6 +64,7 @@ void            ramdiskrw(struct buf*);
 void*           kalloc(void);
 void            kfree(void *);
 void            kinit(void);
+int             get_free_memory_amount(void);
 
 // log.c
 void            initlog(int, struct superblock*);
@@ -82,6 +84,7 @@ void            panic(char*) __attribute__((noreturn));
 void            printfinit(void);
 
 // proc.c
+int             get_unused_proc_num(void);
 int             cpuid(void);
 void            exit(int);
 int             fork(void);

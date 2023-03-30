@@ -1,0 +1,8 @@
+1. which other xv6 system call(s) could be made faster using this shared page? Explain how.
+
+the all system call which uses the pid, such as wait(pid as return value), kill(pid as args)
+
+
+
+10
+

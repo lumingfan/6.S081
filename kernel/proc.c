@@ -11,7 +11,6 @@ struct cpu cpus[NCPU];
 struct proc proc[NPROC];
 
 struct proc *initproc;
-struct usyscall *ugetpid;
 
 int nextpid = 1;
 struct spinlock pid_lock;
@@ -128,12 +127,12 @@ found:
     return 0;
   }
 
-  if ((ugetpid = (struct usyscall *)kalloc()) == 0){
+  if ((p->usyscall = (struct usyscall *)kalloc()) == 0){
       freeproc(p);
       release(&p->lock);
       return 0;
   }
-  ugetpid->pid = p->pid;
+  p->usyscall->pid = p->pid;
 
 
   // An empty user page table.
@@ -163,9 +162,9 @@ freeproc(struct proc *p)
     kfree((void*)p->trapframe);
   p->trapframe = 0;
 
-  if (ugetpid)
-      kfree((void*)ugetpid);
- ugetpid = 0;
+  if (p->usyscall)
+      kfree((void*)p->usyscall);
+  p->usyscall = 0;
   if(p->pagetable)
     proc_freepagetable(p->pagetable, p->sz);
   p->pagetable = 0;
@@ -210,8 +209,9 @@ proc_pagetable(struct proc *p)
   }
 
   if (mappages(pagetable, USYSCALL, PGSIZE, 
-               (uint64)(ugetpid), PTE_U | PTE_R) < 0) {
-      uvmunmap(pagetable, USYSCALL, 1, 0);
+               (uint64)(p->usyscall), PTE_U | PTE_R) < 0) {
+      uvmunmap(pagetable, TRAMPOLINE, 1, 0);
+      uvmunmap(pagetable, TRAPFRAME, 1, 0);
       uvmfree(pagetable, 0);
       return 0;
   }

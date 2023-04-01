@@ -136,7 +136,7 @@ printfinit(void)
 
 
 void backtrace_recursive(uint64 fp) {
-    if (PGROUNDUP(fp) <= PGROUNDDOWN(fp)) 
+    if (fp == PGROUNDDOWN(fp)) 
         return ;
 
     printf("%p\n", *(uint64*)(fp - 8));

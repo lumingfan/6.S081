@@ -1,0 +1,12 @@
+a0-7; a2
+
+inlined in li a1, 12
+
+628
+
+0x38
+
+He110 World; 0x726c4600; no
+
+y=value of a2
+

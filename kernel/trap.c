@@ -73,6 +73,47 @@ usertrap(void)
     p->killed = 1;
   }
 
+  if (which_dev == 2 && p->ticks != 0 && p->prevent_re_entry != 1) {
+     p->ticks_num += 1;
+     if (p->ticks_num == p->ticks) {
+         // save regsiter 
+         p->reg_value[0] = p->trapframe->a0;
+         p->reg_value[1] = p->trapframe->a1;
+         p->reg_value[2] = p->trapframe->a2;
+         p->reg_value[3] = p->trapframe->a3;
+         p->reg_value[4] = p->trapframe->a4;
+         p->reg_value[5] = p->trapframe->a5;
+         p->reg_value[6] = p->trapframe->a6;
+         p->reg_value[7] = p->trapframe->a7;
+         p->reg_value[8] = p->trapframe->t0;
+         p->reg_value[9] = p->trapframe->t1;
+         p->reg_value[10] = p->trapframe->t2;
+         p->reg_value[11] = p->trapframe->t3;
+         p->reg_value[12] = p->trapframe->t4;
+         p->reg_value[13] = p->trapframe->t5;
+         p->reg_value[14] = p->trapframe->t6;
+         p->reg_value[15] = p->trapframe->epc;
+         p->reg_value[16] = p->trapframe->s0;
+         p->reg_value[17] = p->trapframe->s1;
+         p->reg_value[18] = p->trapframe->s2;
+         p->reg_value[19] = p->trapframe->s3;
+         p->reg_value[20] = p->trapframe->s4;
+         p->reg_value[21] = p->trapframe->s5;
+         p->reg_value[22] = p->trapframe->s6;
+         p->reg_value[23] = p->trapframe->s7;
+         p->reg_value[24] = p->trapframe->s8;
+         p->reg_value[25] = p->trapframe->s9;
+         p->reg_value[26] = p->trapframe->s10;
+         p->reg_value[27] = p->trapframe->s11;
+         p->reg_value[28] = p->trapframe->ra;
+         p->reg_value[29] = p->trapframe->sp;
+
+         p->ticks_num = 0;
+         p->trapframe->epc = p->handler;
+         p->prevent_re_entry = 1;
+     } 
+  }
+
   if(p->killed)
     exit(-1);
 

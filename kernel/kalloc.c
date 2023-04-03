@@ -53,7 +53,10 @@ int get_idx(void *pa) {
 }
 
 void increase_ref(void *pa) {
+  acquire(&kmem.lock);
   kmem.ref[get_idx(pa)]++;
+  release(&kmem.lock);
+
 }
 
 int decrease_ref(void *pa) {
@@ -63,8 +66,12 @@ int decrease_ref(void *pa) {
 void
 kfree(void *pa)
 {
-  if (decrease_ref(pa)!= 0)
+  acquire(&kmem.lock);
+  if (decrease_ref(pa)!= 0) {
+      release(&kmem.lock);
       return;
+  }
+  release(&kmem.lock);
 
   struct run *r;
 

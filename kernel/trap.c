@@ -73,7 +73,7 @@ usertrap(void)
     if (va >= MAXVA) 
         exit(-1);
     pte_t *pte = walk(myproc()->pagetable, va, 0);
-    if (pte == 0) p->killed = 1;
+    if (pte == 0) exit(-1);
     if ((*pte & PTE_V) == 0) exit(-1);
     if ((*pte & PTE_U) == 0) exit(-1); 
 

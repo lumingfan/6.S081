@@ -63,8 +63,7 @@ int decrease_ref(void *pa) {
 void
 kfree(void *pa)
 {
-  decrease_ref(pa);
-  if (kmem.ref[get_idx(pa)] != 0)
+  if (decrease_ref(pa)!= 0)
       return;
 
   struct run *r;

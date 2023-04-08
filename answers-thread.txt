@@ -1,0 +1,8 @@
+with 1 thread, the instructions executed serially, so nothing wrong happend.
+
+with 2 or more thread, because of race condition in function insert:
+    e->next = n;
+    *p = e;
+some keys can be lost,
+for example, suppose 2 thread run,
+when thread_1 finish the e->next = n, the os swicth to thread_2, then run e->next = n and *p = e, after that switch back to thread_1, continue the *p = e, the thread_2's e->next = n will be lost

@@ -103,9 +103,37 @@ e1000_transmit(struct mbuf *m)
   // a pointer so that it can be freed after sending.
   //
   
+  acquire(&e1000_lock);
+  uint32 tx_ring_index = regs[E1000_TDT];  // the TX ring index
+
+  // if the ring hasn't finished the previous trasmission, error
+  if ((tx_ring[tx_ring_index].status & E1000_TXD_STAT_DD) == 0) {
+      release(&e1000_lock);
+      return -1;
+  } 
+  // free the last mbuf 
+  if (tx_mbufs[tx_ring_index] != 0)
+      mbuffree(tx_mbufs[tx_ring_index]);
+  
+    
+  // set TX descriptors
+  tx_ring[tx_ring_index].addr = (uint64)m->head;
+  tx_ring[tx_ring_index].length = m->len; 
+  tx_ring[tx_ring_index].cmd |= E1000_TXD_CMD_RS;
+  tx_ring[tx_ring_index].cmd |= E1000_TXD_CMD_EOP;
+
+  // set pointer to the mbuf for later freeing
+  tx_mbufs[tx_ring_index] = m;
+
+  // update the ring position
+  regs[E1000_TDT] = (regs[E1000_TDT] + 1) % TX_RING_SIZE;
+  release(&e1000_lock);
+
   return 0;
 }
 
+
+extern void net_rx(struct mbuf *m);
 static void
 e1000_recv(void)
 {
@@ -115,6 +143,35 @@ e1000_recv(void)
   // Check for packets that have arrived from the e1000
   // Create and deliver an mbuf for each packet (using net_rx()).
   //
+
+
+
+  // ask the ring index
+  acquire(&e1000_lock);
+  uint32 rx_ring_index = (regs[E1000_RDT] + 1) % RX_RING_SIZE;
+
+  // if a new packet is not available
+  while ((rx_ring[rx_ring_index].status & E1000_RXD_STAT_DD) != 0) {
+    // update the mbufs len and deliver it
+      rx_mbufs[rx_ring_index]->len = rx_ring[rx_ring_index].length;
+
+      release(&e1000_lock);
+      net_rx(rx_mbufs[rx_ring_index]);
+
+      // alloc a new mbuf replace the one just given the net_rx();
+      acquire(&e1000_lock);
+      struct mbuf *new_mbuf = mbufalloc(0);
+      rx_mbufs[rx_ring_index] = new_mbuf;
+      rx_ring[rx_ring_index].addr = (uint64)new_mbuf->head;
+      rx_ring[rx_ring_index].status = 0x0;
+
+      // update the E1000_RDT reg
+      regs[E1000_RDT] = rx_ring_index;
+
+      rx_ring_index = (regs[E1000_RDT] + 1) % RX_RING_SIZE;
+  }
+
+  release(&e1000_lock);
 }
 
 void

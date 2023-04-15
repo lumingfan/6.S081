@@ -51,7 +51,6 @@ binit(void)
   for(b = buf; b < buf+NBUF; b++){
     b->next = bcache[0].head.next;
     b->prev = &bcache[0].head;
-    b->timestamps = ticks;
     initsleeplock(&b->lock, "buffer");
     bcache[0].head.next->prev = b;
     bcache[0].head.next = b;
@@ -95,10 +94,10 @@ bget(uint dev, uint blockno)
         if(b->refcnt == 0) {
          b->next->prev = b->prev;
          b->prev->next = b->next;
-         b->next = bcache[id].head.next;
-         b->prev = &bcache[id].head;
-         bcache[id].head.next->prev = b;
-         bcache[id].head.next = b;     
+         b->next = &bcache[id].head;
+         b->prev = bcache[id].head.prev;
+         bcache[id].head.prev->next = b;
+         bcache[id].head.prev = b;     
 
           b->dev = dev;
           b->blockno = blockno;
@@ -149,15 +148,22 @@ brelse(struct buf *b)
     panic("brelse");
 
 
+  int id = hash(b->dev, b->blockno);
+  releasesleep(&b->lock);
+   
+  acquire(&bcache[id].lock);
   b->refcnt--;
   if (b->refcnt == 0) {
     // no one is waiting for it.
-      b->timestamps = ticks;
+    b->next->prev = b->prev;
+    b->prev->next = b->next;
+    b->next = bcache[id].head.next;
+    b->prev = &bcache[id].head;
+    bcache[id].head.next->prev = b;
+    bcache[id].head.next = b;
   }
 
-  releasesleep(&b->lock);
-
-  
+  release(&bcache[id].lock); 
 }
 
 void

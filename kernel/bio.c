@@ -69,7 +69,7 @@ static int hash(uint dev, uint blockno) {
 static struct buf*
 bget(uint dev, uint blockno)
 {
-  struct buf *b;
+  struct buf *b = 0;
   
   int id = hash(dev, blockno);
 
@@ -87,6 +87,7 @@ bget(uint dev, uint blockno)
 
   // Not cached.
   // Recycle the least recently used (LRU) unused buffer.
+
   for (int i = 0; i < BUCKET_NUM; ++i) {
       if (i != id)
           acquire(&bcache[i].lock);
@@ -113,6 +114,7 @@ bget(uint dev, uint blockno)
       if (i != id)
           release(&bcache[i].lock);
   }
+
   panic("bget: no buffers");
 }
 

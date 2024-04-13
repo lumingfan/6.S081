@@ -1,3 +1,22 @@
+# MIT 6.S081 Operating System Engineering
+
+This repository contains my learning materials for MIT 6.S081 Operating System Engineering.
+
+## Structure
+
+- [x] util (check the code with `git check out util`, the follows are similar)
+- [x] cow
+- [x] fs
+- [x] lock
+- [x] net
+- [x] pgtbl
+- [x] syscall
+- [x] thread
+- [x] trap
+
+
+## Course Resource
+
 [course website](https://pdos.csail.mit.edu/6.828/2021/schedule.html)
 
 
